@@ -1,45 +1,39 @@
 'use strict';
-
 const express = require('express');
+const { WebhookClient } = require('dialogflow-fulfillment');
+const { SessionsClient } = require('@google-cloud/dialogflow');
+
 const app = express();
 const port = process.env.PORT || 10000;
-
-const { SessionsClient } = require('@google-cloud/dialogflow');
-const sessionClient = new SessionsClient();
-
-const projectId = 'renaceai-bot-ysvq'; // Asegúrate que sea correcto
+const projectId = 'renaceai-bot-ysvq';
 
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+const sessionClient = new SessionsClient();
 
 app.post('/', async (req, res) => {
-  const userMessage = req.body.Body;
-  const userNumber = req.body.From;
+  const agent = new WebhookClient({ request: req, response: res });
+  const from = req.body.From;
+  const text = req.body.Body;
 
-  const sessionPath = sessionClient.projectAgentSessionPath(projectId, userNumber);
-
-  const requestDialogflow = {
+  const sessionPath = sessionClient.projectAgentSessionPath(projectId, from);
+  const request = {
     session: sessionPath,
     queryInput: {
-      text: {
-        text: userMessage,
-        languageCode: 'es',
-      },
-    },
+      text: { text, languageCode: 'es' }
+    }
   };
 
   try {
-    const responses = await sessionClient.detectIntent(requestDialogflow);
-    const fulfillmentText = responses[0].queryResult.fulfillmentText;
-
+    const [response] = await sessionClient.detectIntent(request);
+    const reply = response.queryResult.fulfillmentText;
     res.set('Content-Type', 'text/xml');
-    res.send(`<Response><Message>${fulfillmentText}</Message></Response>`);
-  } catch (error) {
-    console.error('❌ Error al conectar con Dialogflow:', error);
-    res.set('Content-Type', 'text/xml');
-    res.send(`<Response><Message>Lo siento, ocurrió un error 😔</Message></Response>`);
+    res.send(`<Response><Message>${reply}</Message></Response>`);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(`<Response><Message>Lo siento, ocurrió un error 😞</Message></Response>`);
   }
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Servidor escuchando en puerto ${port}`);
-});
+app.listen(port, () => console.log(`Servidor escuchando en puerto ${port}`));
