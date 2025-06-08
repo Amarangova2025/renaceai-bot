@@ -4,23 +4,41 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 10000;
 
+const { WebhookClient } = require('dialogflow-fulfillment');
+const { SessionsClient } = require('@google-cloud/dialogflow');
+
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-app.post('/', (req, res) => {
-  const mensaje = req.body.Body;
-  console.log('Mensaje recibido:', mensaje);
+const sessionClient = new SessionsClient();
+const projectId = 'renaceai-bot-ysvq'; // ⚠️ Asegúrate que sea tu ID de proyecto real
 
-  let respuesta = "Hola, soy Renace AI 🌸 ¿cómo te sientes hoy?";
+app.post('/', async (req, res) => {
+  const message = req.body.Body;
+  const phone = req.body.From;
 
-  // Respuestas condicionales
-  if (mensaje.toLowerCase().includes('solo')) {
-    respuesta = "No estás sola 💛 Estoy contigo.";
-  } else if (mensaje.toLowerCase().includes('vida')) {
-    respuesta = "Tu vida es valiosa 🌟. Podemos hablar cuando quieras.";
+  const sessionPath = sessionClient.projectAgentSessionPath(projectId, phone);
+
+  const requestDialogflow = {
+    session: sessionPath,
+    queryInput: {
+      text: {
+        text: message,
+        languageCode: 'es',
+      },
+    },
+  };
+
+  try {
+    const [response] = await sessionClient.detectIntent(requestDialogflow);
+    const fulfillmentText = response.queryResult.fulfillmentText;
+
+    res.set('Content-Type', 'text/xml');
+    res.send(`<Response><Message>${fulfillmentText}</Message></Response>`);
+  } catch (error) {
+    console.error("Error al contactar con Dialogflow:", error);
+    res.status(500).send(`<Response><Message>Ocurrió un error al procesar tu mensaje</Message></Response>`);
   }
-
-  res.set('Content-Type', 'text/xml');
-  res.send(`<Response><Message>${respuesta}</Message></Response>`);
 });
 
 app.listen(port, () => {
