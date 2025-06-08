@@ -1,5 +1,10 @@
 'use strict';
 
+process.env.GOOGLE_APPLICATION_CREDENTIALS = './renaceai-bot-ysvq-fdc8b8d49c9c.json';
+
+const sessionClient = new SessionsClient();
+const sessionPath = sessionClient.projectAgentSessionPath(projectId, sessionId);
+
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 10000;
