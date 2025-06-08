@@ -1,48 +1,45 @@
-const express = require("express");
-const axios = require("axios");
-const bodyParser = require("body-parser");
+'use strict';
 
-const app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+process.env.GOOGLE_APPLICATION_CREDENTIALS = './renaceai-bot-ysvq-fdc8b8d49c9c.json';
 
-const dialogflowUrl = "https://dialogflow.googleapis.com/v2/projects/renaceai-bot-ysvq/agent/sessions/123456789:detectIntent"; // Reemplaza con tu URL real si tienes una.
+const { WebhookClient } = require('dialogflow-fulfillment');
+const { SessionsClient } = require('@google-cloud/dialogflow');
+const functions = require('@google-cloud/functions-framework');
 
-const dialogflowToken = "Bearer TU_TOKEN_DE_DIALOGFLOW"; // O usar una cuenta de servicio si quieres más seguridad.
+const projectId = 'renaceai-bot-ysvq';
+const sessionClient = new SessionsClient();
 
-app.post("/dialogflowWebhook", async (req, res) => {
-  try {
-    const incomingMsg = req.body.Body || req.body.message;
-    const sessionId = req.body.From || "anonimo";
+functions.http('dialogflowWebhook', async (req, res) => {
+    const agent = new WebhookClient({ request: req, response: res });
 
-    const dfResponse = await axios.post(
-      dialogflowUrl,
-      {
-        queryInput: {
-          text: {
-            text: incomingMsg,
-            languageCode: "es",
-          },
-        },
-      },
-      {
-        headers: {
-          Authorization: dialogflowToken,
-        },
-      }
-    );
+    const twilioMessageBody = req.body.Body;
+    const twilioFromNumber = req.body.From;
 
-    const respuestaDialogflow = dfResponse.data.queryResult.fulfillmentText;
+    async function handleIntent(agent) {
+        const sessionPath = sessionClient.projectAgentSessionPath(projectId, twilioFromNumber);
 
-    res.send(respuestaDialogflow);
-  } catch (err) {
-    console.error("Error con Dialogflow:", err.message);
-    res.status(500).send("Lo sentimos, ocurrió un error.");
-  }
-});
+        const detectIntentRequest = {
+            session: sessionPath,
+            queryInput: {
+                text: {
+                    text: twilioMessageBody,
+                    languageCode: 'es',
+                },
+            },
+        };
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
+        try {
+            const responses = await sessionClient.detectIntent(detectIntentRequest);
+            const fulfillmentText = responses[0].queryResult.fulfillmentText;
+
+            res.set('Content-Type', 'text/xml');
+            res.send(`<Response><Message>${fulfillmentText}</Message></Response>`);
+        } catch (error) {
+            console.error('Error:', error);
+            res.status(500).send(`<Response><Message>Ocurrió un error procesando tu mensaje</Message></Response>`);
+        }
+    }
+
+    await handleIntent(agent);
 });
 
