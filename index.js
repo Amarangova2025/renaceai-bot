@@ -1,32 +1,29 @@
 'use strict';
 
 const express = require('express');
-const { SessionsClient } = require('@google-cloud/dialogflow');
-const bodyParser = require('body-parser');
-require('dotenv').config();
-
 const app = express();
 const port = process.env.PORT || 10000;
+const { SessionsClient } = require('@google-cloud/dialogflow');
+const bodyParser = require('body-parser');
+const twilio = require('twilio');
+
+// Configurar credenciales de Dialogflow
+const sessionClient = new SessionsClient();
+const projectId = 'renaceai-bot-ysvq';
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const sessionClient = new SessionsClient({
-  keyFilename: './credentials/dialogflow-key.json',
-});
-
-const projectId = process.env.DIALOGFLOW_PROJECT_ID;
-
 app.post('/', async (req, res) => {
-  const userMessage = req.body.Body;
-  const userNumber = req.body.From;
-
-  const sessionPath = sessionClient.projectAgentSessionPath(projectId, userNumber);
+  const message = req.body.Body;
+  const from = req.body.From;
+  const sessionPath = sessionClient.projectAgentSessionPath(projectId, from);
 
   const request = {
     session: sessionPath,
     queryInput: {
       text: {
-        text: userMessage,
+        text: message,
         languageCode: 'es',
       },
     },
@@ -34,17 +31,18 @@ app.post('/', async (req, res) => {
 
   try {
     const responses = await sessionClient.detectIntent(request);
-    const result = responses[0].queryResult.fulfillmentText;
+    const result = responses[0].queryResult;
+    const reply = result.fulfillmentText;
 
     res.set('Content-Type', 'text/xml');
-    res.send(`<Response><Message>${result}</Message></Response>`);
+    res.send(`<Response><Message>${reply}</Message></Response>`);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error en detectIntent:', error);
     res.set('Content-Type', 'text/xml');
-    res.send('<Response><Message>Ocurrió un error 😓</Message></Response>');
+    res.send(`<Response><Message>Lo siento, ocurrió un error 😔</Message></Response>`);
   }
 });
 
 app.listen(port, () => {
-  console.log(`✅ Servidor Renace AI activo en el puerto ${port}`);
+  console.log(`Renace AI escuchando en el puerto ${port}`);
 });
