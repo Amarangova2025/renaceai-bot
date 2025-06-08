@@ -1,12 +1,10 @@
 'use strict';
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS = './renaceai-bot-ysvq-fdc8b8d49c9c.json';
-
 const { WebhookClient } = require('dialogflow-fulfillment');
 const { SessionsClient } = require('@google-cloud/dialogflow');
 const functions = require('@google-cloud/functions-framework');
 
-const projectId = 'renaceai-bot-ysvq';
+const projectId = 'renaceai-bot-jysyq'; // ← Reemplaza si cambia
 const sessionClient = new SessionsClient();
 
 functions.http('dialogflowWebhook', async (req, res) => {
@@ -43,3 +41,4 @@ functions.http('dialogflowWebhook', async (req, res) => {
     await handleIntent(agent);
 });
 
+           
