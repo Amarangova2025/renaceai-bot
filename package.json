@@ -6,10 +6,8 @@
     "start": "node index.js"
   },
   "dependencies": {
-  "dialogflow-fulfillment": "^0.6.1",
-  "@google-cloud/dialogflow": "^4.2.0",
-  "@google-cloud/functions-framework": "^3.3.0"
-}
-
+    "dialogflow-fulfillment": "^0.6.1",
+    "@google-cloud/dialogflow": "^4.2.0",
+    "@google-cloud/functions-framework": "^3.3.0"
   }
 }
