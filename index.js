@@ -1,4 +1,5 @@
 'use strict';
+process.env.GOOGLE_APPLICATION_CREDENTIALS = './renaceai-bot-ysvq-fdc8b8d49c9c.json';
 
 const { WebhookClient } = require('dialogflow-fulfillment');
 const { SessionsClient } = require('@google-cloud/dialogflow');
