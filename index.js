@@ -2,46 +2,27 @@
 
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000;
-
-const { WebhookClient } = require('dialogflow-fulfillment');
-const { SessionsClient } = require('@google-cloud/dialogflow');
-
-const sessionClient = new SessionsClient();
-const projectId = 'renaceai-bot-ysvq';
+const port = process.env.PORT || 10000;
 
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/', async (req, res) => {
-    const agent = new WebhookClient({ request: req, response: res });
+app.post('/', (req, res) => {
+  const mensaje = req.body.Body;
+  console.log('Mensaje recibido:', mensaje);
 
-    const twilioMessageBody = req.body.Body;
-    const twilioFromNumber = req.body.From;
+  let respuesta = "Hola, soy Renace AI 🌸 ¿cómo te sientes hoy?";
 
-    const sessionPath = sessionClient.projectAgentSessionPath(projectId, twilioFromNumber);
+  // Respuestas condicionales
+  if (mensaje.toLowerCase().includes('solo')) {
+    respuesta = "No estás sola 💛 Estoy contigo.";
+  } else if (mensaje.toLowerCase().includes('vida')) {
+    respuesta = "Tu vida es valiosa 🌟. Podemos hablar cuando quieras.";
+  }
 
-    const detectIntentRequest = {
-        session: sessionPath,
-        queryInput: {
-            text: {
-                text: twilioMessageBody,
-                languageCode: 'es',
-            },
-        },
-    };
-
-    try {
-        const responses = await sessionClient.detectIntent(detectIntentRequest);
-        const fulfillmentText = responses[0].queryResult.fulfillmentText;
-
-        res.set('Content-Type', 'text/xml');
-        res.send(`<Response><Message>${fulfillmentText}</Message></Response>`);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).send(`<Response><Message>Ocurrió un error procesando tu mensaje</Message></Response>`);
-    }
+  res.set('Content-Type', 'text/xml');
+  res.send(`<Response><Message>${respuesta}</Message></Response>`);
 });
 
 app.listen(port, () => {
-    console.log(`Servidor escuchando en puerto ${port}`);
+  console.log(`Servidor escuchando en puerto ${port}`);
 });
