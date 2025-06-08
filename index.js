@@ -2,29 +2,27 @@
 
 const express = require('express');
 const { SessionsClient } = require('@google-cloud/dialogflow');
-const path = require('path');
 const app = express();
 const port = process.env.PORT || 10000;
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS = path.join(__dirname, 'renaceai-bot-ysvq-fdc8b8d49c9c.json');
+// Middleware para leer datos POST de Twilio
+app.use(express.urlencoded({ extended: true }));
 
+// Configura el cliente de Dialogflow
 const sessionClient = new SessionsClient();
 const projectId = 'renaceai-bot-ysvq';
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
 app.post('/', async (req, res) => {
-  const from = req.body.From || 'anon';
-  const text = req.body.Body || 'Hola';
+  const userMessage = req.body.Body;
+  const sessionId = req.body.From;
 
-  const sessionPath = sessionClient.projectAgentSessionPath(projectId, from);
+  const sessionPath = sessionClient.projectAgentSessionPath(projectId, sessionId);
 
   const request = {
     session: sessionPath,
     queryInput: {
       text: {
-        text,
+        text: userMessage,
         languageCode: 'es',
       },
     },
@@ -33,16 +31,17 @@ app.post('/', async (req, res) => {
   try {
     const responses = await sessionClient.detectIntent(request);
     const result = responses[0].queryResult;
-    const fulfillmentText = result.fulfillmentText || 'Lo siento, no entendí eso 😞';
+    const reply = result.fulfillmentText || "Lo siento, no entendí eso 😔";
 
     res.set('Content-Type', 'text/xml');
-    res.send(`<Response><Message>${fulfillmentText}</Message></Response>`);
+    res.send(`<Response><Message>${reply}</Message></Response>`);
   } catch (error) {
-    console.error('💥 Error al procesar el intent:', error.message);
-    res.status(500).send(`<Response><Message>Lo siento, ocurrió un error 😔</Message></Response>`);
+    console.error('Error al procesar mensaje:', error.message);
+    res.set('Content-Type', 'text/xml');
+    res.send(`<Response><Message>Lo siento, ocurrió un error 😓</Message></Response>`);
   }
 });
 
 app.listen(port, () => {
-  console.log(`🚀 Servidor escuchando en puerto ${port}`);
+  console.log(`🟢 Servidor escuchando en el puerto ${port}`);
 });
