@@ -1,5 +1,7 @@
 'use strict';
 
+GOOGLE_APPLICATION_CREDENTIALS = renaceai-bot-ysvq-fdc8b8d49c9c.json
+
 const express = require('express');
 const { SessionsClient } = require('@google-cloud/dialogflow');
 const app = express();
