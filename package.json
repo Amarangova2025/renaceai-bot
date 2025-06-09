@@ -1,18 +1,18 @@
 {
-  "name": "renace-ai-chatbot-webhook",
+  "name": "renace-ai-chatbot",
   "version": "1.0.0",
-  "description": "Webhook para Renace AI con Dialogflow y Twilio",
-  ""main": "server.js", // O el nombre de tu archivo principal
+  "description": "Webhook para el chatbot emocional Renace AI con Dialogflow y Twilio.",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js" // Render ejecutará esto para iniciar tu app
+    "start": "node index.js"
   },
   "dependencies": {
-    "@google-cloud/dialogflow": "^VERSION_ACTUAL", // Busca la versión más reciente en npmjs.com
-    "express": "^VERSION_ACTUAL",
-    "body-parser": "^VERSION_ACTUAL",
-    "twilio": "^VERSION_ACTUAL"
+    "@google-cloud/dialogflow": "^3.0.0", 
+    "express": "^4.19.2",
+    "body-parser": "^1.20.2",
+    "twilio": "^5.2.0"
   },
   "devDependencies": {
-    // Si tienes dependencias de desarrollo, ponlas aquí
+    "nodemon": "^3.1.4"
   }
 }
