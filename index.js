@@ -66,7 +66,8 @@ app.post('/', async (req, res) => {
     // Detectar la intención usando Dialogflow
     const responses = await sessionClient.detectIntent(request);
     const result = responses[0].queryResult;
-    
+    console.log("RESPUESTA DE DIALOGFLOW:", JSON.stringify(result, null, 2));
+  
     // Obtener la respuesta de cumplimiento de Dialogflow o un mensaje por defecto
     const reply = result.fulfillmentText || 'Lo siento, no entendí eso. ¿Podrías repetirlo?';
 
