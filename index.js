@@ -19,7 +19,10 @@ app.use(bodyParser.json());
 app.post('/', async (req, res) => {
   const message = req.body.Body;
   const from = req.body.From;
-  const sessionPath = sessionClient.projectAgentSessionPath(projectId, from);
+  const sessionId = from; // esto es lo que espera Dialogflow como sessionId
+  
+   const sessionPath = sessionClient.projectAgentSessionPath(projectId, sessionId);
+
 
   const request = {
     session: sessionPath,
