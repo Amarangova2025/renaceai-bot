@@ -33,6 +33,8 @@ app.use(bodyParser.json());
 app.post('/', async (req, res) => {
   const message = req.body.Body;
   const from = req.body.From;
+  console.log("Mensaje recibido de Twilio:", req.body);
+
 
   const sessionPath = sessionClient.projectAgentSessionPath(projectId, from);
   const request = {
@@ -50,9 +52,14 @@ app.post('/', async (req, res) => {
     const result = responses[0].queryResult;
     const reply = result.fulfillmentText || 'Lo siento, no entendí eso.';
 
-    const MessagingResponse = twilio.twiml.MessagingResponse;
+   const MessagingResponse = twilio.twiml.MessagingResponse;
     const twiml = new MessagingResponse();
-    twiml.message(reply);
+    twiml.message('¡Hola! Recibimos tu mensaje 😊');
+
+res.set('Content-Type', 'text/xml');
+res.send(twiml.toString());
+return;
+
 
     res.set('Content-Type', 'text/xml');
     res.send(twiml.toString());
