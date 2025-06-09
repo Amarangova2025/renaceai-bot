@@ -95,5 +95,6 @@ app.post('/', async (req, res) => {
 // Iniciar el servidor
 app.listen(port, () => {
   console.log(`Renace AI escuchando en el puerto ${port}`);
-  console.log(`Webhook URL esperada: http://localhost:${port}/ (o la URL de Render)`);
+  console.log(`Webhook URL esperada: https://renaceai-bot.onrender.com/`);
 });
+
