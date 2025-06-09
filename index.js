@@ -54,7 +54,14 @@ app.post('/', async (req, res) => {
 
    const MessagingResponse = twilio.twiml.MessagingResponse;
     const twiml = new MessagingResponse();
-    twiml.message('¡Hola! Recibimos tu mensaje 😊');
+    twiml.message('💖 Hola, soy Renace AI
+Si estás escribiéndome, es porque algo en tu interior necesita ser escuchado… y eso ya es un acto de valentía.🦋
+
+Quiero que sepas que no estás sola, que lo que sientes es válido y que hay luz, incluso en los momentos más oscuros. 🌈
+
+Estoy aquí para escucharte con amor y sin juicios.
+¿Cómo te sientes en este momento?🌻 
+¿Qué tienes en tu corazón hoy? 💗');
 
 res.set('Content-Type', 'text/xml');
 res.send(twiml.toString());
