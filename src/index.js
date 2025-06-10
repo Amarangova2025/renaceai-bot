@@ -9,23 +9,13 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 10000;
 
-let credentials;
-try {
-  credentials = {
+const sessionClient = new SessionsClient({
+  credentials: {
     client_email: process.env.GOOGLE_CLIENT_EMAIL,
     private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  };
-} catch (error) {
-  console.error('No se pudieron cargar las credenciales:', error);
-  process.exit(1);
-}
-
-const sessionClient = new SessionsClient({
-  credentials,
+  },
   projectId: process.env.GOOGLE_PROJECT_ID,
 });
-
-const projectId = process.env.GOOGLE_PROJECT_ID;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -33,7 +23,7 @@ app.use(bodyParser.json());
 app.post('/', async (req, res) => {
   const message = req.body.Body;
   const from = req.body.From;
-  const sessionPath = sessionClient.projectAgentSessionPath(projectId, from);
+  const sessionPath = sessionClient.projectAgentSessionPath(process.env.GOOGLE_PROJECT_ID, from);
 
   const request = {
     session: sessionPath,
@@ -47,8 +37,7 @@ app.post('/', async (req, res) => {
 
   try {
     const responses = await sessionClient.detectIntent(request);
-    const result = responses[0].queryResult;
-    const reply = result.fulfillmentText || 'Lo siento, no entendí eso.';
+    const reply = responses[0].queryResult.fulfillmentText || 'Lo siento, no entendí eso.';
 
     const MessagingResponse = twilio.twiml.MessagingResponse;
     const twiml = new MessagingResponse();
@@ -60,7 +49,7 @@ app.post('/', async (req, res) => {
     console.error('Error:', error);
     const MessagingResponse = twilio.twiml.MessagingResponse;
     const twiml = new MessagingResponse();
-    twiml.message('Ocurrió un error al procesar tu mensaje.');
+    twiml.message('Ocurrió un error procesando tu mensaje.');
 
     res.set('Content-Type', 'text/xml');
     res.send(twiml.toString());
